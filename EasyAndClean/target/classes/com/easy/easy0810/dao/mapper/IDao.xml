@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.easy.easy0810.dao.IDao">
+
+		
+	<!-- 회원가입 ID 중복체크  -->
+	<select id="userCheck"
+		resultType="com.easy.easy0810.dto.MemberVO">
+		select * from member where memId=#{param1}
+	</select>
+	
+	<!-- ID값으로 데이터가져오는 메소드  -->
+	<select id="getMember"
+		resultType="com.easy.easy0810.dto.MemberVO">
+		select * from member where memId=#{param1}
+	</select>	
+	
+	<!-- 로그인시 ID와 비밀번호 맞는지 확인하는 메소드  -->
+	<select id="confirmID" resultType="string">
+		select memId from member where memId=#{param1}
+	</select>
+
+	<!-- 회원가입 메소드  -->
+	<insert id="insertMember"
+		parameterType="com.easy.easy0810.dto.MemberVO">
+		insert into member
+		(memNum, memType, memId, memPwd,
+		memName,user_birth_year,
+		user_birth_month, user_birth_day,
+		memGen,memEmail,memPhone, memAdd_1,memAdd_2,memAdd_3)
+			
+		values(id_seq.nextval,1,#{memId},#{memPwd},#{memName},#{user_birth_year},#{user_birth_month},#{user_birth_day},#{memGen},#{memEmail},#{memPhone},#{memAdd_1},#{memAdd_2},#{memAdd_3})
+	</insert>
+	
+	<!-- 관리자 회원가입  메소드  -->
+	<insert id="insertAdmin"
+		parameterType="com.easy.easy0810.dto.MemberVO">
+		insert into member
+		(memNum, memType, memId, memPwd,
+		memName, memGen,memEmail,memPhone)
+		values(id_seq.nextval,0,#{memId},#{memPwd},#{memName},#{memGen},#{memEmail},#{memPhone})
+	</insert>
+	
+	<!-- 회원 정보 수정시 정보 출력 메소드  -->
+	<select id="selectOneMemId"
+		resultType="com.easy.easy0810.dto.MemberVO">
+		select * from member where memId=#{param1}
+	</select>
+	
+	<!-- 회원 정보 수정 메소드  -->
+	<update id="updateMember"
+		parameterType="com.easy.easy0810.dto.MemberVO">
+		update member set memType=#{memType},memPwd=#{memPwd},
+		memName=#{memName},User_birth_year=#{user_birth_year},User_birth_month=#{user_birth_month},User_birth_day=#{user_birth_day}
+		,memGen=#{memGen},memPhone=#{memPhone},memEmail=#{memEmail},memAdd_1=#{memAdd_1},memAdd_2=#{memAdd_2},memAdd_3=#{memAdd_3}
+		where memId=#{memId}
+	</update>
+	
+	<!-- 관리자  정보 수정 메소드  -->
+	<update id="updateAdmin"
+		parameterType="com.easy.easy0810.dto.MemberVO">
+		update member set memPwd=#{memPwd},
+		memName=#{memName},memGen=#{memGen},memPhone=#{memPhone},memEmail=#{memEmail}
+		where memId=#{memId}
+	</update>
+	
+
+	
+	<!-- 관리자 메뉴 회원 전체 출력 메소드  -->
+	<select id="memSearchSelect" resultType="com.easy.easy0810.dto.MemberVO">
+	select * from (select rowNum m, sub.* from (select * from member order by memNum DESC) sub where rowNum<![CDATA[<]]>= #{param1}*#{param2} and ${param3} like '%'||#{param4}||'%') where m<![CDATA[>]]>=(#{param1}-1)*#{param2}+1
+	</select>
+	
+	<!-- 관리자 메뉴 회원 데이터카운트 메소드  -->
+	<select id="DataCountmemName" resultType="Integer">
+		select count(memName) memCount from member where ${param1} like '%'||#{param2}||'%'
+	</select>	
+	
+	<!-- 관리자 메뉴 회원 정보 세부보기 메소드  -->
+	<select id="selectOneMemByMemId"
+		resultType="com.easy.easy0810.dto.MemberVO">
+		select * from member where memId=#{param1}
+	</select>	
+
+	<!-- 관리자 메뉴 회원 정보 수정 메소드  -->
+	<update id="adminMemUpdate">
+		update member set memType=#{param2},memPwd=#{param3},
+		memName=#{param4},User_birth_year=#{param5},User_birth_month=#{param6},User_birth_day=#{param7}
+		,memGen=#{param8},memPhone=#{param9},memEmail=#{param10},memAdd_1=#{param11},memAdd_2=#{param12},memAdd_3=#{param13}
+		where memId=#{param1}
+	</update>
+	
+	<!-- 관리자 메뉴 회원 삭제 메소드  -->
+	<update id="adminMemDelete">
+		update member set memType=2 where memId=#{param1}
+	</update>
+	
+	<!-- 회원 탈퇴 메소드  -->
+	<update id="MemDelete">
+		delete from member where memId=#{param1}
+	</update>
+	
+	<!-- 회원 탈퇴시 기존 예약 Id 바꾸는 메소드  -->
+	<update id="member_res_Delete">
+		update reserve set memId='delmember' where memId=#{param1}
+	</update>
+	
+	<!-- 관리자 메뉴 예약 전체 출력 메소드  -->
+	<select id="resSearchSelect" resultType="com.easy.easy0810.dto.ReserveVO">
+	select * from (select rowNum m, sub.* from (select * from reserve where resPay  <![CDATA[<]]> 2 order by resId DESC) sub where rowNum  <![CDATA[<=]]> #{param1}*#{param2} and ${param3} like '%'||#{param4}||'%') where m<![CDATA[>=]]>(#{param1}-1)*#{param2}+1
+	</select>
+	
+	<!-- 관리자 메뉴 배송완료된 예약 출력 메소드  -->
+	<select id="resSearchSelectOld" resultType="com.easy.easy0810.dto.ReserveVO">
+	select * from (select rowNum m, sub.* from (select * from reserve where resPay  <![CDATA[=]]> 2 order by resId DESC) sub where rowNum  <![CDATA[<=]]> #{param1}*#{param2} and ${param3} like '%'||#{param4}||'%') where m<![CDATA[>=]]>(#{param1}-1)*#{param2}+1
+	</select>
+	
+	<!-- 관리자 메뉴 취소된 예약 출력 메소드  -->
+	<select id="resSearchSelectDel" resultType="com.easy.easy0810.dto.ReserveVO">
+	select * from (select rowNum m, sub.* from (select * from reserve where resPay  <![CDATA[=]]> 3 order by resId DESC) sub where rowNum  <![CDATA[<=]]> #{param1}*#{param2} and ${param3} like '%'||#{param4}||'%') where m<![CDATA[>=]]>(#{param1}-1)*#{param2}+1
+	</select>
+	
+	<!-- 관리자 메뉴 예약 전체 데이터카운트 메소드  -->
+	<select id="DataCountmemId" resultType="Integer">
+		select count(memId) memCount from reserve where ${param1} like '%'||#{param2}||'%' and resPay  <![CDATA[<]]> 2
+	</select>
+	
+	<!-- 관리자 메뉴 배송완료된 예약 데이터카운트 메소드  -->
+	<select id="DataCountmemIdOld" resultType="Integer">
+		select count(memId) memCount from reserve where ${param1} like '%'||#{param2}||'%' and resPay  <![CDATA[=]]> 2
+	</select>
+	
+	<!-- 관리자 메뉴 취소된 예약 데이터카운트 메소드  -->
+	<select id="DataCountmemIdDel" resultType="Integer">
+		select count(memId) memCount from reserve where ${param1} like '%'||#{param2}||'%' and resPay  <![CDATA[=]]> 3
+	</select>
+	
+	
+	<!-- 관리자 메뉴 예약관리 예약 세부정보 보기 메소드 -->
+	<select id="selectOneResByResId"
+		resultType="com.easy.easy0810.dto.ReserveVO">
+		select * from reserve where resId =#{param1}
+	</select>
+	
+	<!-- 관리자 메뉴 예약 정보 수정 메소드 -->
+	<update id="adminResUpdate">
+		update Reserve set proId=#{param2},
+		proType=#{param3}, proName=#{param4},
+		resNum=#{param5},
+		resCharge=#{param6},resData=#{param7} where
+		resId=#{param1}
+	</update>
+	
+	<!-- 관리자 메뉴 예약 취소 메소드 -->
+	<delete id="adminResDelete">
+		update reserve set resPay=3 where resId=#{param1}
+	</delete>
+	
+	<!-- 관리자 메뉴 예약 상품준비중 처리 메소드 -->
+	<update id="ReserveAdminUpdate1">
+		update reserve set resData='서비스진행중' where
+		resId=#{param1}
+	</update>
+	
+	<!-- 관리자 메뉴 예약 배송중 처리 메소드 -->
+	<update id="ReserveAdminUpdate2">
+		update reserve set resData='배송중' where
+		resId=#{param1}
+	</update>
+	
+	<!-- 관리자 메뉴 예약 배송완료 처리 메소드 -->
+	<update id="ReserveAdminUpdate3">
+		update reserve set resData='배송완료' where
+		resId=#{param1}
+	</update>
+	
+	<!-- 관리자 메뉴 예약 취소 처리 메소드 -->
+	<update id="ReserveAdminUpdate4">
+		update reserve set resPay=3 where resId=#{param1}
+	</update>
+	
+	<!-- 장바구니 담기 메소드 -->
+	<insert id="ReserveInsert"
+		parameterType="com.easy.easy0810.dto.ReserveVO">
+		insert into reserve
+		(resId,memId,proId,proType,proName,resNum,resCharge,resPay,resData,resDate,memAdd_1,memAdd_2,memAdd_3)
+		values(id_seq.nextval,#{param1},#{param2},#{param3},#{param4},#{param5},#{param6},0,#{param7},null,#{param8},#{param9},#{param10})
+	</insert>
+	
+	<!-- 장바구니 출력 메소드 -->
+	<select id="selectAllbucket"
+		resultType="com.easy.easy0810.dto.ReserveVO">
+		select * from reserve where memId=#{param1} and resPay=0
+		order by resId
+	</select>
+	
+	<!-- 장바구니 상품 결제 메소드 -->
+	<update id="reserveRes">
+		update reserve set
+		resPay=1,resDate=sysDate,resGroup=#{param2} where
+		resId=#{param1}
+	</update>
+	
+	<!-- 장바구니에서 예약 취소 메소드 -->
+	<delete id="ReserveBucketDelete">
+		update reserve set resPay=3 where resId=#{param1}
+	</delete>
+	
+	<!-- 장바구니에서 선택 예약 취소 메소드 -->
+	<delete id="ReserveBucketDeleteChoose">
+		update reserve set resPay=3 where resId=#{param1}
+	</delete>
+	
+
+	<!-- 나의예약 그룹별 출력 메소드 -->
+	<select id="selectGroupReserve"
+		resultType="com.easy.easy0810.dto.ReserveVO">
+		select DISTINCT resGroup,resDate,resData from reserve where
+		(memId=#{param1} and resPay = 1) order by resGroup DESC
+	</select>
+	
+	<!-- 나의예약 그룹별 세부보기 메소드 -->
+	<select id="selectDetailReserve"
+		resultType="com.easy.easy0810.dto.ReserveVO">
+		select * from reserve where resGroup=#{param1} and resPay=1
+	</select>
+
+	<!-- 나의예약 주소 수정 메소드 -->
+	<update id="Member_Add_Update">
+		update reserve set memAdd_1 = #{param2},memAdd_2 = #{param3},memAdd_3 = #{param4} where resGroup=#{param1}
+	</update>
+	
+
+	<!-- 나의예약에서 예약 취소 메소드 -->
+	<delete id="ReserveReserveDelete">
+		update reserve set resPay=3 where resGroup=#{param1}
+	</delete>
+	
+
+	
+	<!-- 공지사항 -->
+	
+	<!-- 공지사항 출력 메소드-->
+	<select id="searchSelect" resultType="com.easy.easy0810.dto.BDto">
+		select * from (select rowNum m, sub.* from (select * from Notice_board_file order by bGroup DESC,bStep ASC) sub where rowNum <![CDATA[<=]]> #{param1}*#{param2} and ${param3} like '%'||#{param4}||'%') where m <![CDATA[>=]]> (#{param1}-1)*#{param2}+1															
+	</select>
+	
+	<!-- 공지사항 글쓰기 메소드-->
+	<insert id="insert" >
+		insert into Notice_board_file (bId,bName,bTitle,bContent,bGroup,bStep,bIndent,bFile) 
+		values (Notice_board_file_seq.nextval,#{param1},#{param2},#{param3},Notice_board_file_seq.currval,0,0,#{param4})
+		</insert>
+		
+		
+	<!-- 공지사항 게시글로 정보 받아오기 메소드-->
+	<select id="select" resultType="com.easy.easy0810.dto.BDto">
+		select * from Notice_board_file where bId=#{param1} order by bGroup DESC,bStep ASC
+	</select>
+		
+	<!-- 공지사항 게시글로 정보 받아오기 메소드-->
+	<select id="select2" resultType="com.easy.easy0810.dto.BDto">
+		select * from Notice_board_file where bId=#{param1} order by bGroup DESC,bStep ASC
+	</select>
+	
+	<!-- 공지사항 조회수 증가 메소드-->
+	<update id="updateHit" >
+	update Notice_board_file set bHit=bHit+1 where bId=#{param1}
+	</update>	
+	
+	<!-- 공지사항 댓글쓸때 조회수 처리 메소드-->
+	<update id="downdateHit" parameterType="_int">
+	update Notice_board_file set bHit=bHit-1 where bId=#{param1}
+	</update>
+	
+	<!-- 공지사항 글 삭제 메소드-->
+	<delete id="delete">
+	delete Notice_board_file where bId=#{param1}
+	</delete>
+	
+	<!-- 공지사항 수정 메소드-->
+	<update id="update">
+	update Notice_board_file set bTitle=#{param2},bContent=#{param3},bFile=#{param4} where bId=#{param1}
+	</update>
+	
+	<!-- 공지사항  데이터카운트 메소드-->
+	<select id="dataCountBoard2" resultType="_int">
+		select count(bId) bCount from Notice_board_file where ${param1} like '%'||#{param2}||'%'
+	</select>
+	
+	<!-- 공지사항 댓글 데이터카운트 메소드-->
+	<select id="dataCoCount" resultType="_int">
+		select  count(*) bCount from Notice_board_comment_id_page where NOTICE_COMMENT_BOARD=#{param1}
+	</select>
+	
+	<!-- 공지사항 댓글 출력 메소드-->
+	<select id="searchCoSelect" resultType="com.easy.easy0810.dto.BCommentDto">
+	select * from (select rowNum m,NOTICE_COMMENT_NUM, NOTICE_COMMENT_BOARD, NOTICE_COMMENT_ID, NOTICE_COMMENT_DATE,NOTICE_COMMENT_CONTENT,NOTICE_COMMENT_INDENT,NOTICE_COMMENT_GROUPID,NOTICE_COMMENT_STEP from (select NOTICE_COMMENT_NUM, NOTICE_COMMENT_BOARD, NOTICE_COMMENT_ID, NOTICE_COMMENT_DATE,NOTICE_COMMENT_CONTENT,NOTICE_COMMENT_INDENT,NOTICE_COMMENT_GROUPID,NOTICE_COMMENT_STEP from Notice_board_comment_id_page where NOTICE_COMMENT_BOARD=#{param3} order by NOTICE_COMMENT_GROUPID DESC, NOTICE_COMMENT_STEP ASC) sub where rowNum <![CDATA[<]]>= #{param1}*#{param2} order by NOTICE_COMMENT_BOARD)  where m <![CDATA[>]]>=(#{param1}-1)*#{param2}+1
+	</select>
+	
+	<!-- 공지사항 댓글 입력 메소드-->
+	<insert id="insertBoardComment" parameterType="com.easy.easy0810.dto.BCommentDto" >
+	insert into Notice_board_comment_id_page (NOTICE_COMMENT_NUM, NOTICE_COMMENT_BOARD, NOTICE_COMMENT_ID,  NOTICE_COMMENT_CONTENT, NOTICE_COMMENT_INDENT, NOTICE_COMMENT_GROUPID, NOTICE_COMMENT_STEP)
+	 values(Comment_num_seq.nextval, #{NOTICE_COMMENT_BOARD}, #{NOTICE_COMMENT_ID}, #{NOTICE_COMMENT_CONTENT}, 0,Comment_num_seq.currval,0)
+	</insert>	
+	
+	<!-- 공지사항 대댓글 입력 메소드-->
+	<insert id="insertBoardCommentReply" parameterType="com.easy.easy0810.dto.BCommentDto" >
+	insert into Notice_board_comment_id_page (NOTICE_COMMENT_NUM, NOTICE_COMMENT_BOARD, NOTICE_COMMENT_ID,  NOTICE_COMMENT_CONTENT, NOTICE_COMMENT_INDENT, NOTICE_COMMENT_GROUPID, NOTICE_COMMENT_STEP) 
+	values(Comment_num_seq.nextval, #{NOTICE_COMMENT_BOARD}, #{NOTICE_COMMENT_ID}, #{NOTICE_COMMENT_CONTENT},#{NOTICE_COMMENT_INDENT}+1 ,#{NOTICE_COMMENT_GROUPID}, #{NOTICE_COMMENT_STEP}+1)	
+	</insert>	
+	
+	<!-- 공지사항 댓글 삭제 메소드-->
+	<update id="delete_comment">
+		update Notice_board_comment_id_page set NOTICE_COMMENT_ID='&gt;', NOTICE_COMMENT_CONTENT='삭제된 댓글입니다' where NOTICE_COMMENT_NUM=#{param1}
+	</update>	
+	
+		
+	<!-- 건의사항 -->
+	
+	<!-- 건의사항 출력 메소드-->
+	<select id="searchSelectSug" resultType="com.easy.easy0810.dto.SugDto">
+		select * from (select rowNum m, bId, bName, bTitle, bContent, bDate, bHit, bGroup, bStep, bIndent, bSugFile from (select bId, bName, bTitle, bContent, bDate, bHit, bGroup, bStep, bIndent, bSugFile from mvc_board order by bGroup DESC, bStep ASC) sub where rowNum <![CDATA[<=]]> #{param1}*#{param2} and ${param3} like '%'||#{param4}||'%' order by bGroup DESC, bStep ASC) where m<![CDATA[>=]]>(#{param1}-1)*#{param2}+1
+	</select>
+	
+	<!-- 건의사항 세부보기 메소드-->
+	<select id="selectSug" resultType="com.easy.easy0810.dto.SugDto">
+		select * from mvc_board where bId=#{param1} order by bGroup DESC, bStep ASC
+	</select>
+	
+	<!-- 건의사항 작성 메소드-->
+	<insert id="write" >
+	insert into mvc_board(bId,bName,bTitle,bContent,bGroup,bStep,bIndent,bSugFile) values (mvc_board_seq.nextval,#{param1},#{param2},#{param3}, mvc_board_seq.currval,0,0,#{param4})
+	</insert>	
+		
+	<!-- 건의사항 수정 메소드-->
+	<update id="modify">
+		update mvc_board set bTitle=#{param2},bContent=#{param3}, bSugFile=#{param4} where bId=#{param1}
+	</update>	
+	
+	<!-- 건의사항 삭제 메소드-->
+	<delete id="deleteSug">
+	delete from mvc_board where bId ={param1}
+	</delete>
+	
+	<!-- 건의사항 답글 메소드-->
+	<insert id="reply" >
+	insert into mvc_board (bId, bName, bTitle, bContent, bGroup, bStep, bIndent) 
+	values (mvc_board_seq.nextval, #{param1}, #{param2}, #{param3}, #{param4}, #{param5}, #{param6})</insert>	
+	
+	<!-- 건의사항 답글 세부보기 메소드-->
+	<select id="reply_view" resultType="com.easy.easy0810.dto.SugDto">
+	select * from mvc_board where bId=#{param1}
+	</select>
+	
+	<!-- 건의사항 조회수 처리 메소드-->
+	<update id="upHit">
+	update mvc_board set bHit = bHit + 1 where bId = #{param1}
+	</update>	
+	
+	<!-- 건의사항 데이터카운트 메소드-->
+	<select id="dataCountSug" resultType="_int">
+	select count(bId) bCount from mvc_board where ${param1} like '%'||#{param2}||'%'
+	</select>	
+	
+	<!-- 상품정보 출력 메소드 -->
+	<select id="selectAllproduct"
+		resultType="com.easy.easy0810.dto.ProductVO">
+		select * from product
+	</select>
+	
+	<!-- 상품 번호로 정보 출력 메소드 -->
+	<select id="ListselectProId"
+		resultType="com.easy.easy0810.dto.ProductVO">
+		select proType,proName,proPrice from product where
+		proId=#{param1}
+	</select>
+	
+</mapper>
